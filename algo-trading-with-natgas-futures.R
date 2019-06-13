@@ -1,22 +1,14 @@
----
-title: "Algorithmic Trading with Natural Gas Futures"
-output: html_notebook
----
-
-### 1. Library Imports
-```{r}
+## ------------------------------------------------------------------------
 library(forecast)
 library(IKTrading)
-library(knitr)
 library(PerformanceAnalytics)
 library(quantmod)
 library(quantstrat)
 library(tidyverse)
 library(TTR)
-```
 
-### 2. Importing Data and Exploratory Data Analysis
-```{r}
+
+## ------------------------------------------------------------------------
 # Import Henry Hub Natural Gas Front Month Contract Data from Quandl
 natgas <- read_csv("https://www.quandl.com/api/v3/datasets/CHRIS/CME_NG1.csv?api_key=rn2xyN_hG9XfxN_9ibFJ")
 
@@ -28,8 +20,8 @@ head(natgas)
 
 # Print the last 6 rows of the data.frame
 tail(natgas)
-```
-```{r}
+
+## ------------------------------------------------------------------------
 # Convert the data.frame object to an xts object
 natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 
@@ -37,8 +29,8 @@ natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 str(natgas_xts)
 head(natgas_xts)
 tail(natgas_xts)
-```
-```{r}
+
+## ------------------------------------------------------------------------
 # Plot the historical data for HH Futures with rectanges identifying spikes
 autoplot(object = natgas_xts$Settle) +
   geom_rect(mapping = aes(xmin = as.Date("2000-01-01"), xmax = as.Date("2002-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
@@ -48,17 +40,17 @@ autoplot(object = natgas_xts$Settle) +
   labs(title = "Historical Data of Henry Hub Natural Gas Physical Futures", subtitle = "From 1990-04-03 to 2019-06-11") +
   xlab("Date") +
   ylab("Price")
-```
-A historical analysis of Henry Hub Natural Gas prices demonstrates a few interesting points. In 2001, we see a large rally in prices, which, [according to this article](https://www.croftsystems.net/oil-gas-blog/a-look-back-on-natural-gas-prices), was attributed to a sharp increase in gas demand. In 2005, we see a second large spike (to a historical high) owing to Hurricanes Rita and Katrina, which limited supplies from the US Gulf Coast. Finally, we see a few more interesting spikes in 2008 (Hurricans Gustav and Ike) as well as the infamous rally in Q4 2019.
-```{r}
+
+
+## ------------------------------------------------------------------------
 # Compute the daily returns from HH Natural Gas Physical Futures
 natgas_returns <- Return.calculate(prices = natgas_xts$Settle)
 
 # Examine the natgas_returns xts objects
 head(natgas_returns)
 tail(natgas_returns)
-```
-```{r}
+
+## ------------------------------------------------------------------------
 # Find the largest up move and down move in HH Natural Gas Futures
 largest_up_move <- max(natgas_returns$Settle, na.rm = TRUE)
 largest_down_move <- min(natgas_returns$Settle, na.rm = TRUE)
@@ -66,19 +58,18 @@ largest_down_move <- min(natgas_returns$Settle, na.rm = TRUE)
 # Subset the xts object to return the occurrences with the largest movements
 natgas_returns[which(natgas_returns$Settle == largest_up_move)]
 natgas_returns[which(natgas_returns$Settle == largest_down_move)]
-```
-Our analysis shows that the biggest moves in Henry Hub Natural Gas Futures occurred consecutively on 14th April 2006 and 17th April 2006. One possibility is that this volatility in the market was the result of both the effects of Hurricane Katrina, in addition to geopolitical events such as the [Russia-Ukraine gas dispute](https://en.wikipedia.org/wiki/2005%E2%80%9306_Russia%E2%80%93Ukraine_gas_dispute).
 
-```{r}
+
+## ------------------------------------------------------------------------
 # Plot a histogram of Natural Gas returns
 ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
   geom_histogram(bins = 100) +
   labs(title = "Histogram of Henry Hub Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
   xlab("Returns") +
   ylab("Frequency")
-```
-Similar to the earlier analysis done for Brent Crude Returns, returns from Henry Hub Natural Gas Futures are mildly left-skewed (as are most financial time series).
-```{r}
+
+
+## ------------------------------------------------------------------------
 # Plot a series of boxplots per year
 natgas %>% 
   mutate(Year = format(Date, "%Y"), Returns = (Settle / lead(Settle) - 1)) %>% 
@@ -89,9 +80,9 @@ natgas %>%
   xlab("Year") +
   ylab("Returns") +
   theme(legend.position = "none", axis.text.x = element_text(angle = 45, size = 8))
-```
-Natural Gas returns appear to be substantially more volatile than those seen in Brent. While the majority of Brent returns find themselves within the bounds of (-5%, 5%), we can see from this series of boxplots than it is not uncommon for Natural Gas returns to waver between (-10%, 10%), with some extreme moves as seen in the approximately +60% and -30% moves in 2006.
-```{r}
+
+
+## ------------------------------------------------------------------------
 # Plot a QQ PLot of Returns
 natgas_returns %>% 
   ggplot(mapping = aes(sample = Settle)) +
@@ -100,11 +91,9 @@ natgas_returns %>%
   labs(title = "Quantile-Quantile Plot of Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
   xlab("Theoretical Quantiles") +
   ylab("Sample Quantiles")
-```
-Natural Gas returns show signs of very fat tails, as observed in the trailing observations at the end of the QQ-Line. This suggests that returns are non-normal, with the distribution approximating a Pareto structure.
 
-### 3. Initializing Strategy Parameters and Instruments
-```{r}
+
+## ------------------------------------------------------------------------
 # Define initial system parameters
 initdate <- "2010-01-01"
 from <- "2011-01-01"
@@ -124,8 +113,8 @@ colnames(NG) <- c("NG.Open", "NG.High", "NG.Low", "NG.Close", "NG.Volume")
 head(NG)
 tail(NG)
 future(primary_id = asset, currency = "USD", multiplier = 1)
-```
-```{r}
+
+## ------------------------------------------------------------------------
 # Define tradesize and initial equity amounts as $10,000 and $100,000 respectively
 tradesize <- 10000
 initeq <- 100000
@@ -142,10 +131,9 @@ initPortf(portfolio.st, symbols = asset, initDate = initdate, currency = "USD")
 initAcct(account.st, portfolios = portfolio.st, initDate = initdate, currency = "USD", initEQ = initeq)
 initOrders(portfolio.st, initDate = initdate)
 strategy(strategy.st, store = TRUE)
-```
 
-### 4. Constructing the Strategy with Indicators
-```{r}
+
+## ------------------------------------------------------------------------
 # Add a long-dated Simple Moving Average indicator to the strategy
 add.indicator(
   strategy = strategy.st, 
@@ -173,10 +161,9 @@ add.indicator(
     n = 3),
   label = "RSI3"
   )
-```
 
-### 5. Adding Signals to the Strategy
-```{r}
+
+## ------------------------------------------------------------------------
 # Add a buy signal when SMA50 crosses above SMA200
 add.signal(
   strategy = strategy.st, 
@@ -225,10 +212,9 @@ add.signal(
     relationship = "gt",
     cross = TRUE),
   label = "exit_threshold")
-```
 
-### 6. Creating Rules based on Strategy Signals
-```{r}
+
+## ------------------------------------------------------------------------
 # Add a rule to go long when the long_entry signal is TRUE
 add.rule(
   strategy = strategy.st, 
@@ -273,10 +259,9 @@ add.rule(
     replace = FALSE,
     prefer = "Open"), 
   type = "exit")
-```
 
-### 7. Applying the Strategy and Updating Portfolios
-```{r}
+
+## ------------------------------------------------------------------------
 # Apply the strategy onto Natural Gas Historical Data
 output <- applyStrategy(strategy = strategy.st, portfolios = portfolio.st)
 
@@ -285,28 +270,15 @@ updatePortf(Portfolio = portfolio.st)
 daterange <- time(getPortfolio(portfolio.st)$summary)[-1]
 updateAcct(account.st, daterange)
 updateEndEq(account.st)
-```
 
-### 8. Visualizing the results of the Strategy
-```{r}
+
+## ------------------------------------------------------------------------
 # Plot a summary chart of the Portfolio's performance
 chart.Posn(Portfolio = portfolio.st, Symbol = asset)
-```
 
-### 9. Analyzing the performance of the Strategy
-```{r}
+
+## ------------------------------------------------------------------------
 # Generate trade statistics for this strategy
 tstats <- tradeStats(Portfolios = portfolio.st)
 data.frame(t(tstats))
-```
-```{r}
-# Export analysis to an R Script
-purl("algo-trading-with-natgas-futures.Rmd")
-```
 
-### 10. Final Conclusions
-A quick tinkering with the ['quantstrat'](https://www.rdocumentation.org/packages/quantstrat/versions/0.15.11) package in R shows that applying a dual strategy of (a) SMA crossovers and (b) RSI Mean Reversion for trading Natural Gas Futures leads to above-average, but not stellar returns. (Profit.Factor of 1.67 and Annual Sharpe Ratio of 2.16).
-
-From an analysis of the Performance Chart, we see that the strategy performed well between 2011 and 2015, where Natural Gas markets appeared to trend more often. In recent years, however, price action has remained within a narrower range with the strategy having poorer performance (and a large drawdown in Q4 2018).
-
-Given these facts, a future project could explore a more Oscillation-focused strategy to see if it out-performs the current base strategy as Natural Gas markets evolve.
