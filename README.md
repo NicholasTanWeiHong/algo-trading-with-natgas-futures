@@ -1,4 +1,4 @@
-# Algorithmic Trading with Henry Hub Natural Gas Physical Futures
+# Algorithmic Trading with Natural Gas Physical Futures
 
 This project utilizes the 'quantstrat' package in R to backtest a simple SMA-Crossover + RSI Mean-Reversion Strategy on Natural Gas Futures.
 
