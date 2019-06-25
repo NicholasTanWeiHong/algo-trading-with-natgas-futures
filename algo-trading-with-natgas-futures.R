@@ -1,6 +1,7 @@
 ## ------------------------------------------------------------------------
 library(forecast)
 library(IKTrading)
+library(knitr)
 library(PerformanceAnalytics)
 library(quantmod)
 library(quantstrat)
@@ -281,4 +282,8 @@ chart.Posn(Portfolio = portfolio.st, Symbol = asset)
 # Generate trade statistics for this strategy
 tstats <- tradeStats(Portfolios = portfolio.st)
 data.frame(t(tstats))
+
+## ------------------------------------------------------------------------
+# Export analysis to an R Script
+purl("algo-trading-with-natgas-futures.Rmd")
 
