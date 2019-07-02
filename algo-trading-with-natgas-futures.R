@@ -3,6 +3,7 @@ library(forecast)
 library(IKTrading)
 library(knitr)
 library(PerformanceAnalytics)
+library(Quandl)
 library(quantmod)
 library(quantstrat)
 library(tidyverse)
@@ -11,10 +12,11 @@ library(TTR)
 
 ## ------------------------------------------------------------------------
 # Import Henry Hub Natural Gas Front Month Contract Data from Quandl
-natgas <- read_csv("https://www.quandl.com/api/v3/datasets/CHRIS/CME_NG1.csv?api_key=rn2xyN_hG9XfxN_9ibFJ")
+Quandl.api_key("rn2xyN_hG9XfxN_9ibFJ")
+natgas <- Quandl("CHRIS/CME_NG1")
 
 # Print the structure of the Natural Gas Data
-str(natgas)
+glimpse(natgas)
 
 # Print the first 6 rows of the data.frame
 head(natgas)
@@ -27,20 +29,28 @@ tail(natgas)
 natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 
 # Examine the natgas_xts object
-str(natgas_xts)
+glimpse(natgas_xts)
 head(natgas_xts)
 tail(natgas_xts)
 
 ## ------------------------------------------------------------------------
 # Plot the historical data for HH Futures with rectanges identifying spikes
 autoplot(object = natgas_xts$Settle) +
-  geom_rect(mapping = aes(xmin = as.Date("2000-01-01"), xmax = as.Date("2002-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2005-01-01"), xmax = as.Date("2007-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2008-01-01"), xmax = as.Date("2009-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2018-06-01"), xmax = as.Date("2019-06-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  labs(title = "Historical Data of Henry Hub Natural Gas Physical Futures", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Date") +
-  ylab("Price")
+  labs(
+    x = "Date",
+    y = "Price (USD/MMBtu)",
+    title = "Time Series Plot of Henry Hub Natural Gas Physical Futures", 
+    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
+    caption = "Data source: Quandl Wiki Continuous Futures") +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 
 
 ## ------------------------------------------------------------------------
@@ -48,7 +58,6 @@ autoplot(object = natgas_xts$Settle) +
 natgas_returns <- Return.calculate(prices = natgas_xts$Settle)
 
 # Examine the natgas_returns xts objects
-head(natgas_returns)
 tail(natgas_returns)
 
 ## ------------------------------------------------------------------------
@@ -64,10 +73,22 @@ natgas_returns[which(natgas_returns$Settle == largest_down_move)]
 ## ------------------------------------------------------------------------
 # Plot a histogram of Natural Gas returns
 ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
-  geom_histogram(bins = 100) +
-  labs(title = "Histogram of Henry Hub Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Returns") +
-  ylab("Frequency")
+  geom_histogram(alpha = 0.75, binwidth = .01, col = "black") +
+  labs(
+    x = "Returns",
+    y = "Frequency",
+    title = "Histogram of Henry Hub Natural Gas Returns", 
+    subtitle = "Frequency Distribution of Returns, 1990 to 2019",
+    caption = "Data source: Quandl, Wiki Continuous Futures") +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 
 
 ## ------------------------------------------------------------------------
@@ -76,11 +97,24 @@ natgas %>%
   mutate(Year = format(Date, "%Y"), Returns = (Settle / lead(Settle) - 1)) %>% 
   group_by(Year) %>% 
   ggplot(mapping = aes(x = Year, y = Returns, fill = Year)) +
-  geom_boxplot() +
-  labs(title = "Boxplot of Henry Hub Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Year") +
-  ylab("Returns") +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, size = 8))
+    geom_boxplot() +
+    labs(
+      x = "Year",
+      y = "Returns %",
+      title = "Boxplots of Natural Gas Returns", 
+      subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
+      caption = "Source: Quandl, Wiki Continuous Futures") +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, size = 7),
+      text = element_text(family = "serif"),
+      title = element_text(color = "gray25"),
+      plot.subtitle = element_text(size = 12),
+      plot.caption = element_text(color = "gray30"),
+      plot.background = element_rect(fill = "gray95"),
+      plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+      )
 
 
 ## ------------------------------------------------------------------------
@@ -89,9 +123,22 @@ natgas_returns %>%
   ggplot(mapping = aes(sample = Settle)) +
   stat_qq() +
   stat_qq_line() +
-  labs(title = "Quantile-Quantile Plot of Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Theoretical Quantiles") +
-  ylab("Sample Quantiles")
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles",
+    title = "Quantile-Quantile Plot of Natural Gas Returns",
+    subtitle = "Distribution of Natural Gas Returns, 1990 to 2019",
+    caption = "Data source: Quandl, Wiki Continuous Futures"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 10),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 
 
 ## ------------------------------------------------------------------------

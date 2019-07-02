@@ -73,19 +73,20 @@ library(IKTrading)
 ``` r
 library(knitr)
 library(PerformanceAnalytics)
+library(Quandl)
 library(quantmod)
 library(quantstrat)
 library(tidyverse)
 ```
 
-    ## -- Attaching packages --------------------------------------- tidyverse 1.2.1 --
+    ## -- Attaching packages ----------------------------------------------------------------------------------------- tidyverse 1.2.1 --
 
     ## v ggplot2 3.1.1     v purrr   0.3.2
     ## v tibble  2.1.1     v dplyr   0.8.1
     ## v tidyr   0.8.3     v stringr 1.4.0
     ## v readr   1.3.1     v forcats 0.4.0
 
-    ## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+    ## -- Conflicts -------------------------------------------------------------------------------------------- tidyverse_conflicts() --
     ## x purrr::accumulate() masks foreach::accumulate()
     ## x dplyr::filter()     masks stats::filter()
     ## x dplyr::first()      masks xts::first()
@@ -102,90 +103,75 @@ library(TTR)
 
 ``` r
 # Import Henry Hub Natural Gas Front Month Contract Data from Quandl
-natgas <- read_csv("https://www.quandl.com/api/v3/datasets/CHRIS/CME_NG1.csv?api_key=rn2xyN_hG9XfxN_9ibFJ")
-```
+Quandl.api_key("rn2xyN_hG9XfxN_9ibFJ")
+natgas <- Quandl("CHRIS/CME_NG1")
 
-    ## Parsed with column specification:
-    ## cols(
-    ##   Date = col_date(format = ""),
-    ##   Open = col_double(),
-    ##   High = col_double(),
-    ##   Low = col_double(),
-    ##   Last = col_double(),
-    ##   Change = col_double(),
-    ##   Settle = col_double(),
-    ##   Volume = col_double(),
-    ##   `Previous Day Open Interest` = col_double()
-    ## )
-
-``` r
 # Print the structure of the Natural Gas Data
-str(natgas)
+glimpse(natgas)
 ```
 
-    ## Classes 'spec_tbl_df', 'tbl_df', 'tbl' and 'data.frame': 7327 obs. of  9 variables:
-    ##  $ Date                      : Date, format: "2019-06-24" "2019-06-21" ...
-    ##  $ Open                      : num  2.2 2.21 2.28 2.33 2.37 ...
-    ##  $ High                      : num  2.32 2.22 2.3 2.36 2.4 ...
-    ##  $ Low                       : num  2.19 2.18 2.16 2.27 2.32 ...
-    ##  $ Last                      : num  2.3 2.2 2.21 2.28 2.33 ...
-    ##  $ Change                    : num  0.117 0.001 0.091 0.052 0.058 0.001 0.062 0.061 0.013 0.042 ...
-    ##  $ Settle                    : num  2.3 2.19 2.18 2.28 2.33 ...
-    ##  $ Volume                    : num  66938 88581 196785 165138 116970 ...
-    ##  $ Previous Day Open Interest: num  35429 57589 99439 128396 144054 ...
-    ##  - attr(*, "spec")=
-    ##   .. cols(
-    ##   ..   Date = col_date(format = ""),
-    ##   ..   Open = col_double(),
-    ##   ..   High = col_double(),
-    ##   ..   Low = col_double(),
-    ##   ..   Last = col_double(),
-    ##   ..   Change = col_double(),
-    ##   ..   Settle = col_double(),
-    ##   ..   Volume = col_double(),
-    ##   ..   `Previous Day Open Interest` = col_double()
-    ##   .. )
+    ## Observations: 7,332
+    ## Variables: 9
+    ## $ Date                         <date> 2019-07-01, 2019-06-28, 2019-06-...
+    ## $ Open                         <dbl> 2.330, 2.320, 2.271, 2.289, 2.303...
+    ## $ High                         <dbl> 2.331, 2.364, 2.339, 2.324, 2.315...
+    ## $ Low                          <dbl> 2.217, 2.300, 2.265, 2.265, 2.255...
+    ## $ Last                         <dbl> 2.265, 2.316, 2.323, 2.292, 2.284...
+    ## $ Change                       <dbl> 0.041, 0.016, 0.056, 0.017, 0.005...
+    ## $ Settle                       <dbl> 2.267, 2.308, 2.324, 2.291, 2.308...
+    ## $ Volume                       <dbl> 147490, 116137, 108269, 5791, 538...
+    ## $ `Previous Day Open Interest` <dbl> 366666, 373211, 373163, 4148, 267...
 
 ``` r
 # Print the first 6 rows of the data.frame
 head(natgas)
 ```
 
-    ## # A tibble: 6 x 9
-    ##   Date        Open  High   Low  Last Change Settle Volume `Previous Day Op~
-    ##   <date>     <dbl> <dbl> <dbl> <dbl>  <dbl>  <dbl>  <dbl>             <dbl>
-    ## 1 2019-06-24  2.20  2.32  2.19  2.30  0.117   2.30  66938             35429
-    ## 2 2019-06-21  2.21  2.22  2.18  2.20  0.001   2.19  88581             57589
-    ## 3 2019-06-20  2.28  2.30  2.16  2.21  0.091   2.18 196785             99439
-    ## 4 2019-06-19  2.33  2.36  2.27  2.28  0.052   2.28 165138            128396
-    ## 5 2019-06-18  2.37  2.40  2.32  2.33  0.058   2.33 116970            144054
-    ## 6 2019-06-17  2.39  2.42  2.36  2.38  0.001   2.39 109985            168311
+    ##         Date  Open  High   Low  Last Change Settle Volume
+    ## 1 2019-07-01 2.330 2.331 2.217 2.265  0.041  2.267 147490
+    ## 2 2019-06-28 2.320 2.364 2.300 2.316  0.016  2.308 116137
+    ## 3 2019-06-27 2.271 2.339 2.265 2.323  0.056  2.324 108269
+    ## 4 2019-06-26 2.289 2.324 2.265 2.292  0.017  2.291   5791
+    ## 5 2019-06-25 2.303 2.315 2.255 2.284  0.005  2.308  53866
+    ## 6 2019-06-24 2.197 2.316 2.195 2.301  0.117  2.303  66938
+    ##   Previous Day Open Interest
+    ## 1                     366666
+    ## 2                     373211
+    ## 3                     373163
+    ## 4                       4148
+    ## 5                      26732
+    ## 6                      35429
 
 ``` r
 # Print the last 6 rows of the data.frame
 tail(natgas)
 ```
 
-    ## # A tibble: 6 x 9
-    ##   Date        Open  High   Low  Last Change Settle Volume `Previous Day Op~
-    ##   <date>     <dbl> <dbl> <dbl> <dbl>  <dbl>  <dbl>  <dbl>             <dbl>
-    ## 1 1990-04-10  1.62  1.63  1.61  1.62     NA   1.62     29               150
-    ## 2 1990-04-09  1.61  1.64  1.61  1.64     NA   1.64     37               145
-    ## 3 1990-04-06  1.62  1.64  1.61  1.62     NA   1.62     62               136
-    ## 4 1990-04-05  1.62  1.64  1.61  1.62     NA   1.62     57               112
-    ## 5 1990-04-04  1.62  1.65  1.60  1.62     NA   1.62     84               127
-    ## 6 1990-04-03  1.58  1.66  1.58  1.64     NA   1.64    240               110
+    ##            Date  Open  High   Low  Last Change Settle Volume
+    ## 7327 1990-04-10 1.625 1.630 1.613 1.620     NA  1.620     29
+    ## 7328 1990-04-09 1.612 1.640 1.612 1.637     NA  1.637     37
+    ## 7329 1990-04-06 1.615 1.635 1.610 1.625     NA  1.625     62
+    ## 7330 1990-04-05 1.615 1.635 1.610 1.615     NA  1.615     57
+    ## 7331 1990-04-04 1.620 1.650 1.599 1.620     NA  1.620     84
+    ## 7332 1990-04-03 1.580 1.655 1.580 1.635     NA  1.635    240
+    ##      Previous Day Open Interest
+    ## 7327                        150
+    ## 7328                        145
+    ## 7329                        136
+    ## 7330                        112
+    ## 7331                        127
+    ## 7332                        110
 
 ``` r
 # Convert the data.frame object to an xts object
 natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 
 # Examine the natgas_xts object
-str(natgas_xts)
+glimpse(natgas_xts)
 ```
 
-    ## An 'xts' object on 1990-04-03/2019-06-24 containing:
-    ##   Data: num [1:7327, 1:8] 1.58 1.62 1.61 1.61 1.61 ...
+    ## An 'xts' object on 1990-04-03/2019-07-01 containing:
+    ##   Data: num [1:7332, 1:8] 1.58 1.62 1.61 1.61 1.61 ...
     ##  - attr(*, "dimnames")=List of 2
     ##   ..$ : NULL
     ##   ..$ : chr [1:8] "Open" "High" "Low" "Last" ...
@@ -217,30 +203,38 @@ tail(natgas_xts)
 ```
 
     ##             Open  High   Low  Last Change Settle Volume
-    ## 2019-06-17 2.389 2.418 2.357 2.376  0.001  2.386 109985
-    ## 2019-06-18 2.373 2.404 2.318 2.331  0.058  2.328 116970
-    ## 2019-06-19 2.332 2.358 2.268 2.279  0.052  2.276 165138
-    ## 2019-06-20 2.280 2.303 2.159 2.214  0.091  2.185 196785
-    ## 2019-06-21 2.213 2.222 2.181 2.197  0.001  2.186  88581
     ## 2019-06-24 2.197 2.316 2.195 2.301  0.117  2.303  66938
+    ## 2019-06-25 2.303 2.315 2.255 2.284  0.005  2.308  53866
+    ## 2019-06-26 2.289 2.324 2.265 2.292  0.017  2.291   5791
+    ## 2019-06-27 2.271 2.339 2.265 2.323  0.056  2.324 108269
+    ## 2019-06-28 2.320 2.364 2.300 2.316  0.016  2.308 116137
+    ## 2019-07-01 2.330 2.331 2.217 2.265  0.041  2.267 147490
     ##            Previous Day Open Interest
-    ## 2019-06-17                     168311
-    ## 2019-06-18                     144054
-    ## 2019-06-19                     128396
-    ## 2019-06-20                      99439
-    ## 2019-06-21                      57589
     ## 2019-06-24                      35429
+    ## 2019-06-25                      26732
+    ## 2019-06-26                       4148
+    ## 2019-06-27                     373163
+    ## 2019-06-28                     373211
+    ## 2019-07-01                     366666
 
 ``` r
 # Plot the historical data for HH Futures with rectanges identifying spikes
 autoplot(object = natgas_xts$Settle) +
-  geom_rect(mapping = aes(xmin = as.Date("2000-01-01"), xmax = as.Date("2002-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2005-01-01"), xmax = as.Date("2007-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2008-01-01"), xmax = as.Date("2009-01-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  geom_rect(mapping = aes(xmin = as.Date("2018-06-01"), xmax = as.Date("2019-06-01"), ymin = 0, ymax = max(natgas_xts$Settle)), alpha=0.002) +
-  labs(title = "Historical Data of Henry Hub Natural Gas Physical Futures", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Date") +
-  ylab("Price")
+  labs(
+    x = "Date",
+    y = "Price (USD/MMBtu)",
+    title = "Time Series Plot of Henry Hub Natural Gas Physical Futures", 
+    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
+    caption = "Data source: Quandl Wiki Continuous Futures") +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 ```
 
 ![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -260,28 +254,16 @@ as the infamous rally in Q4 2019.
 natgas_returns <- Return.calculate(prices = natgas_xts$Settle)
 
 # Examine the natgas_returns xts objects
-head(natgas_returns)
-```
-
-    ##                  Settle
-    ## 1990-04-03           NA
-    ## 1990-04-04 -0.009174312
-    ## 1990-04-05 -0.003086420
-    ## 1990-04-06  0.006191950
-    ## 1990-04-09  0.007384615
-    ## 1990-04-10 -0.010384850
-
-``` r
 tail(natgas_returns)
 ```
 
-    ##                   Settle
-    ## 2019-06-17 -0.0004189359
-    ## 2019-06-18 -0.0243084661
-    ## 2019-06-19 -0.0223367698
-    ## 2019-06-20 -0.0399824253
-    ## 2019-06-21  0.0004576659
-    ## 2019-06-24  0.0535224154
+    ##                  Settle
+    ## 2019-06-24  0.053522415
+    ## 2019-06-25  0.002171081
+    ## 2019-06-26 -0.007365685
+    ## 2019-06-27  0.014404190
+    ## 2019-06-28 -0.006884682
+    ## 2019-07-01 -0.017764298
 
 ``` r
 # Find the largest up move and down move in HH Natural Gas Futures
@@ -312,10 +294,22 @@ dispute](https://en.wikipedia.org/wiki/2005%E2%80%9306_Russia%E2%80%93Ukraine_ga
 ``` r
 # Plot a histogram of Natural Gas returns
 ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
-  geom_histogram(bins = 100) +
-  labs(title = "Histogram of Henry Hub Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Returns") +
-  ylab("Frequency")
+  geom_histogram(alpha = 0.75, binwidth = .01, col = "black") +
+  labs(
+    x = "Returns",
+    y = "Frequency",
+    title = "Histogram of Henry Hub Natural Gas Returns", 
+    subtitle = "Frequency Distribution of Returns, 1990 to 2019",
+    caption = "Data source: Quandl, Wiki Continuous Futures") +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 12),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 ```
 
     ## Warning: Removed 1 rows containing non-finite values (stat_bin).
@@ -332,11 +326,24 @@ natgas %>%
   mutate(Year = format(Date, "%Y"), Returns = (Settle / lead(Settle) - 1)) %>% 
   group_by(Year) %>% 
   ggplot(mapping = aes(x = Year, y = Returns, fill = Year)) +
-  geom_boxplot() +
-  labs(title = "Boxplot of Henry Hub Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Year") +
-  ylab("Returns") +
-  theme(legend.position = "none", axis.text.x = element_text(angle = 45, size = 8))
+    geom_boxplot() +
+    labs(
+      x = "Year",
+      y = "Returns %",
+      title = "Boxplots of Natural Gas Returns", 
+      subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
+      caption = "Source: Quandl, Wiki Continuous Futures") +
+    theme_minimal() +
+    theme(
+      legend.position = "none",
+      axis.text.x = element_text(angle = 45, size = 7),
+      text = element_text(family = "serif"),
+      title = element_text(color = "gray25"),
+      plot.subtitle = element_text(size = 12),
+      plot.caption = element_text(color = "gray30"),
+      plot.background = element_rect(fill = "gray95"),
+      plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+      )
 ```
 
     ## Warning: Removed 1 rows containing non-finite values (stat_boxplot).
@@ -356,9 +363,22 @@ natgas_returns %>%
   ggplot(mapping = aes(sample = Settle)) +
   stat_qq() +
   stat_qq_line() +
-  labs(title = "Quantile-Quantile Plot of Natural Gas Returns", subtitle = "From 1990-04-03 to 2019-06-11") +
-  xlab("Theoretical Quantiles") +
-  ylab("Sample Quantiles")
+  labs(
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles",
+    title = "Quantile-Quantile Plot of Natural Gas Returns",
+    subtitle = "Distribution of Natural Gas Returns, 1990 to 2019",
+    caption = "Data source: Quandl, Wiki Continuous Futures"
+  ) +
+  theme_minimal() +
+  theme(
+    text = element_text(family = "serif"),
+    title = element_text(color = "gray25"),
+    plot.subtitle = element_text(size = 10),
+    plot.caption = element_text(color = "gray30"),
+    plot.background = element_rect(fill = "gray95"),
+    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+  )
 ```
 
     ## Warning: Removed 1 rows containing non-finite values (stat_qq).
@@ -367,7 +387,7 @@ natgas_returns %>%
 
 ![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-Natural Gas returns show signs of very fat tails, as observed in the
+Natural Gas returns show signs of *very fat* tails, as observed in the
 trailing observations at the end of the QQ-Line. This suggests that
 returns are non-normal, with the distribution approximating a Pareto
 structure.
@@ -829,6 +849,80 @@ data.frame(t(tstats))
 # Export analysis to an R Script
 purl("algo-trading-with-natgas-futures.Rmd")
 ```
+
+    ## 
+    ## 
+    ## processing file: algo-trading-with-natgas-futures.Rmd
+
+    ## 
+      |                                                                       
+      |                                                                 |   0%
+      |                                                                       
+      |..                                                               |   3%
+      |                                                                       
+      |....                                                             |   6%
+      |                                                                       
+      |......                                                           |   9%
+      |                                                                       
+      |........                                                         |  12%
+      |                                                                       
+      |..........                                                       |  16%
+      |                                                                       
+      |............                                                     |  19%
+      |                                                                       
+      |..............                                                   |  22%
+      |                                                                       
+      |................                                                 |  25%
+      |                                                                       
+      |..................                                               |  28%
+      |                                                                       
+      |....................                                             |  31%
+      |                                                                       
+      |......................                                           |  34%
+      |                                                                       
+      |........................                                         |  38%
+      |                                                                       
+      |..........................                                       |  41%
+      |                                                                       
+      |............................                                     |  44%
+      |                                                                       
+      |..............................                                   |  47%
+      |                                                                       
+      |................................                                 |  50%
+      |                                                                       
+      |...................................                              |  53%
+      |                                                                       
+      |.....................................                            |  56%
+      |                                                                       
+      |.......................................                          |  59%
+      |                                                                       
+      |.........................................                        |  62%
+      |                                                                       
+      |...........................................                      |  66%
+      |                                                                       
+      |.............................................                    |  69%
+      |                                                                       
+      |...............................................                  |  72%
+      |                                                                       
+      |.................................................                |  75%
+      |                                                                       
+      |...................................................              |  78%
+      |                                                                       
+      |.....................................................            |  81%
+      |                                                                       
+      |.......................................................          |  84%
+      |                                                                       
+      |.........................................................        |  88%
+      |                                                                       
+      |...........................................................      |  91%
+      |                                                                       
+      |.............................................................    |  94%
+      |                                                                       
+      |...............................................................  |  97%
+      |                                                                       
+      |.................................................................| 100%
+
+    ## output file: algo-trading-with-natgas-futures.R
 
     ## [1] "algo-trading-with-natgas-futures.R"
 
