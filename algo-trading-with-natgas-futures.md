@@ -2,6 +2,27 @@ Algorithmic Trading with Natural Gas Futures
 ================
 Last updated on 2019-07-03
 
+  - [Summary](#summary)
+  - [Library Imports](#library-imports)
+  - [Code](#code)
+      - [1. Importing Data](#importing-data)
+      - [2. Exploratory Data Analysis](#exploratory-data-analysis)
+      - [3. Initializing Strategy Parameters and
+        Instruments](#initializing-strategy-parameters-and-instruments)
+      - [4. Constructing the Strategy with
+        Indicators](#constructing-the-strategy-with-indicators)
+      - [5. Adding Signals to the
+        Strategy](#adding-signals-to-the-strategy)
+      - [6. Creating Rules based on Strategy
+        Signals](#creating-rules-based-on-strategy-signals)
+      - [7. Applying the Strategy and Updating
+        Portfolios](#applying-the-strategy-and-updating-portfolios)
+      - [8. Visualizing the results of the
+        Strategy](#visualizing-the-results-of-the-strategy)
+      - [9. Analyzing the performance of the
+        Strategy](#analyzing-the-performance-of-the-strategy)
+      - [10. Final Conclusions](#final-conclusions)
+
 ## Summary
 
 This project explores the potential of using the quantstrat package in R
