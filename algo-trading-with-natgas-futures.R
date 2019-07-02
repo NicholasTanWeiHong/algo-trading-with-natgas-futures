@@ -30,27 +30,29 @@ natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 
 # Examine the natgas_xts object
 glimpse(natgas_xts)
-head(natgas_xts)
-tail(natgas_xts)
 
 ## ------------------------------------------------------------------------
-# Plot the historical data for HH Futures with rectanges identifying spikes
-autoplot(object = natgas_xts$Settle) +
-  labs(
-    x = "Date",
-    y = "Price (USD/MMBtu)",
-    title = "Time Series Plot of Henry Hub Natural Gas Physical Futures", 
-    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
-    caption = "Data source: Quandl Wiki Continuous Futures") +
+# Define a standard theme for each visualization
+theme_report <- function() {
   theme_minimal() +
   theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
+    text = element_text(family = "serif", color = "gray25"),
     plot.subtitle = element_text(size = 12),
     plot.caption = element_text(color = "gray30"),
     plot.background = element_rect(fill = "gray95"),
     plot.margin = unit(c(5, 10, 5, 10), units = "mm")
   )
+}
+
+# Plot the historical data for HH Futures with rectanges identifying spikes
+autoplot(object = natgas_xts$Settle) +
+  labs(
+    x = "Date",
+    y = "Price (USD/MMBtu)",
+    title = "Time Series Plot of Henry Hub Physical Futures", 
+    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
+    caption = "Data source: Quandl Wiki Continuous Futures") +
+  theme_report()
 
 
 ## ------------------------------------------------------------------------
@@ -80,15 +82,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
     title = "Histogram of Henry Hub Natural Gas Returns", 
     subtitle = "Frequency Distribution of Returns, 1990 to 2019",
     caption = "Data source: Quandl, Wiki Continuous Futures") +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
-    plot.subtitle = element_text(size = 12),
-    plot.caption = element_text(color = "gray30"),
-    plot.background = element_rect(fill = "gray95"),
-    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
-  )
+  theme_report()
 
 
 ## ------------------------------------------------------------------------
@@ -104,16 +98,10 @@ natgas %>%
       title = "Boxplots of Natural Gas Returns", 
       subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
       caption = "Source: Quandl, Wiki Continuous Futures") +
-    theme_minimal() +
+    theme_report() +
     theme(
       legend.position = "none",
-      axis.text.x = element_text(angle = 45, size = 7),
-      text = element_text(family = "serif"),
-      title = element_text(color = "gray25"),
-      plot.subtitle = element_text(size = 12),
-      plot.caption = element_text(color = "gray30"),
-      plot.background = element_rect(fill = "gray95"),
-      plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+      axis.text.x = element_text(angle = 45, size = 8),
       )
 
 
@@ -130,15 +118,7 @@ natgas_returns %>%
     subtitle = "Distribution of Natural Gas Returns, 1990 to 2019",
     caption = "Data source: Quandl, Wiki Continuous Futures"
   ) +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
-    plot.subtitle = element_text(size = 10),
-    plot.caption = element_text(color = "gray30"),
-    plot.background = element_rect(fill = "gray95"),
-    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
-  )
+  theme_report()
 
 
 ## ------------------------------------------------------------------------

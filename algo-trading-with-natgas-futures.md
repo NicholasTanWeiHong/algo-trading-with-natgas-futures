@@ -180,61 +180,27 @@ glimpse(natgas_xts)
     ##  NULL
 
 ``` r
-head(natgas_xts)
-```
-
-    ##             Open  High   Low  Last Change Settle Volume
-    ## 1990-04-03 1.580 1.655 1.580 1.635     NA  1.635    240
-    ## 1990-04-04 1.620 1.650 1.599 1.620     NA  1.620     84
-    ## 1990-04-05 1.615 1.635 1.610 1.615     NA  1.615     57
-    ## 1990-04-06 1.615 1.635 1.610 1.625     NA  1.625     62
-    ## 1990-04-09 1.612 1.640 1.612 1.637     NA  1.637     37
-    ## 1990-04-10 1.625 1.630 1.613 1.620     NA  1.620     29
-    ##            Previous Day Open Interest
-    ## 1990-04-03                        110
-    ## 1990-04-04                        127
-    ## 1990-04-05                        112
-    ## 1990-04-06                        136
-    ## 1990-04-09                        145
-    ## 1990-04-10                        150
-
-``` r
-tail(natgas_xts)
-```
-
-    ##             Open  High   Low  Last Change Settle Volume
-    ## 2019-06-24 2.197 2.316 2.195 2.301  0.117  2.303  66938
-    ## 2019-06-25 2.303 2.315 2.255 2.284  0.005  2.308  53866
-    ## 2019-06-26 2.289 2.324 2.265 2.292  0.017  2.291   5791
-    ## 2019-06-27 2.271 2.339 2.265 2.323  0.056  2.324 108269
-    ## 2019-06-28 2.320 2.364 2.300 2.316  0.016  2.308 116137
-    ## 2019-07-01 2.330 2.331 2.217 2.265  0.041  2.267 147490
-    ##            Previous Day Open Interest
-    ## 2019-06-24                      35429
-    ## 2019-06-25                      26732
-    ## 2019-06-26                       4148
-    ## 2019-06-27                     373163
-    ## 2019-06-28                     373211
-    ## 2019-07-01                     366666
-
-``` r
-# Plot the historical data for HH Futures with rectanges identifying spikes
-autoplot(object = natgas_xts$Settle) +
-  labs(
-    x = "Date",
-    y = "Price (USD/MMBtu)",
-    title = "Time Series Plot of Henry Hub Natural Gas Physical Futures", 
-    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
-    caption = "Data source: Quandl Wiki Continuous Futures") +
+# Define a standard theme for each visualization
+theme_report <- function() {
   theme_minimal() +
   theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
+    text = element_text(family = "serif", color = "gray25"),
     plot.subtitle = element_text(size = 12),
     plot.caption = element_text(color = "gray30"),
     plot.background = element_rect(fill = "gray95"),
     plot.margin = unit(c(5, 10, 5, 10), units = "mm")
   )
+}
+
+# Plot the historical data for HH Futures with rectanges identifying spikes
+autoplot(object = natgas_xts$Settle) +
+  labs(
+    x = "Date",
+    y = "Price (USD/MMBtu)",
+    title = "Time Series Plot of Henry Hub Physical Futures", 
+    subtitle = "Henry Hub Natural Gas Prices, 1990 to 2019",
+    caption = "Data source: Quandl Wiki Continuous Futures") +
+  theme_report()
 ```
 
 ![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
@@ -301,15 +267,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
     title = "Histogram of Henry Hub Natural Gas Returns", 
     subtitle = "Frequency Distribution of Returns, 1990 to 2019",
     caption = "Data source: Quandl, Wiki Continuous Futures") +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
-    plot.subtitle = element_text(size = 12),
-    plot.caption = element_text(color = "gray30"),
-    plot.background = element_rect(fill = "gray95"),
-    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
-  )
+  theme_report()
 ```
 
     ## Warning: Removed 1 rows containing non-finite values (stat_bin).
@@ -333,16 +291,10 @@ natgas %>%
       title = "Boxplots of Natural Gas Returns", 
       subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
       caption = "Source: Quandl, Wiki Continuous Futures") +
-    theme_minimal() +
+    theme_report() +
     theme(
       legend.position = "none",
-      axis.text.x = element_text(angle = 45, size = 7),
-      text = element_text(family = "serif"),
-      title = element_text(color = "gray25"),
-      plot.subtitle = element_text(size = 12),
-      plot.caption = element_text(color = "gray30"),
-      plot.background = element_rect(fill = "gray95"),
-      plot.margin = unit(c(5, 10, 5, 10), units = "mm")
+      axis.text.x = element_text(angle = 45, size = 8),
       )
 ```
 
@@ -370,15 +322,7 @@ natgas_returns %>%
     subtitle = "Distribution of Natural Gas Returns, 1990 to 2019",
     caption = "Data source: Quandl, Wiki Continuous Futures"
   ) +
-  theme_minimal() +
-  theme(
-    text = element_text(family = "serif"),
-    title = element_text(color = "gray25"),
-    plot.subtitle = element_text(size = 10),
-    plot.caption = element_text(color = "gray30"),
-    plot.background = element_rect(fill = "gray95"),
-    plot.margin = unit(c(5, 10, 5, 10), units = "mm")
-  )
+  theme_report()
 ```
 
     ## Warning: Removed 1 rows containing non-finite values (stat_qq).
