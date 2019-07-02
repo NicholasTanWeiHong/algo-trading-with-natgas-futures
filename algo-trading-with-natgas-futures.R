@@ -1,4 +1,4 @@
-## ------------------------------------------------------------------------
+## ----message = FALSE-----------------------------------------------------
 library(forecast)
 library(IKTrading)
 library(knitr)
@@ -31,7 +31,8 @@ natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 # Examine the natgas_xts object
 glimpse(natgas_xts)
 
-## ------------------------------------------------------------------------
+
+## ----fig.align = "center"------------------------------------------------
 # Define a standard theme for each visualization
 theme_report <- function() {
   theme_minimal() +
@@ -72,7 +73,7 @@ natgas_returns[which(natgas_returns$Settle == largest_up_move)]
 natgas_returns[which(natgas_returns$Settle == largest_down_move)]
 
 
-## ------------------------------------------------------------------------
+## ----fig.align = "center"------------------------------------------------
 # Plot a histogram of Natural Gas returns
 ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
   geom_histogram(alpha = 0.75, binwidth = .01, col = "black") +
@@ -85,7 +86,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
   theme_report()
 
 
-## ------------------------------------------------------------------------
+## ----fig.align = "center"------------------------------------------------
 # Plot a series of boxplots per year
 natgas %>% 
   mutate(Year = format(Date, "%Y"), Returns = (Settle / lead(Settle) - 1)) %>% 
@@ -105,7 +106,7 @@ natgas %>%
       )
 
 
-## ------------------------------------------------------------------------
+## ----fig.align = "center"------------------------------------------------
 # Plot a QQ PLot of Returns
 natgas_returns %>% 
   ggplot(mapping = aes(sample = Settle)) +
@@ -289,7 +290,7 @@ add.rule(
   type = "exit")
 
 
-## ------------------------------------------------------------------------
+## ----message = FALSE-----------------------------------------------------
 # Apply the strategy onto Natural Gas Historical Data
 output <- applyStrategy(strategy = strategy.st, portfolios = portfolio.st)
 
@@ -310,7 +311,7 @@ chart.Posn(Portfolio = portfolio.st, Symbol = asset)
 tstats <- tradeStats(Portfolios = portfolio.st)
 data.frame(t(tstats))
 
-## ------------------------------------------------------------------------
+## ----message = FALSE-----------------------------------------------------
 # Export analysis to an R Script
 purl("algo-trading-with-natgas-futures.Rmd")
 

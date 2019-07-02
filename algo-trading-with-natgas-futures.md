@@ -1,105 +1,36 @@
 Algorithmic Trading with Natural Gas Futures
 ================
+Last updated on 2019-07-03
 
-### 1\. Library Imports
+## Summary
+
+This project explores the potential of using the quantstrat package in R
+to devise an algorithmic trading strategy for Henry Hub Natural Gas
+Futures. It is accompanied by a small section that entails exploratory
+data analysis on the Natural Gas time series data sourced from Quandl.
+
+## Library Imports
 
 ``` r
 library(forecast)
-```
-
-    ## Registered S3 methods overwritten by 'ggplot2':
-    ##   method         from 
-    ##   [.quosures     rlang
-    ##   c.quosures     rlang
-    ##   print.quosures rlang
-
-    ## Registered S3 method overwritten by 'xts':
-    ##   method     from
-    ##   as.zoo.xts zoo
-
-    ## Registered S3 method overwritten by 'quantmod':
-    ##   method            from
-    ##   as.zoo.data.frame zoo
-
-    ## Registered S3 methods overwritten by 'forecast':
-    ##   method             from    
-    ##   fitted.fracdiff    fracdiff
-    ##   residuals.fracdiff fracdiff
-
-``` r
 library(IKTrading)
-```
-
-    ## Loading required package: xts
-
-    ## Loading required package: zoo
-
-    ## 
-    ## Attaching package: 'zoo'
-
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     as.Date, as.Date.numeric
-
-    ## Loading required package: Rcpp
-
-    ## Loading required package: TTR
-
-    ## Loading required package: quantmod
-
-    ## Version 0.4-0 included new data defaults. See ?getSymbols.
-
-    ## Loading required package: quantstrat
-
-    ## Loading required package: blotter
-
-    ## Loading required package: FinancialInstrument
-
-    ## Loading required package: PerformanceAnalytics
-
-    ## 
-    ## Attaching package: 'PerformanceAnalytics'
-
-    ## The following object is masked from 'package:graphics':
-    ## 
-    ##     legend
-
-    ## Loading required package: foreach
-
-    ## Loading required package: digest
-
-    ## Loading required package: roxygen2
-
-``` r
 library(knitr)
 library(PerformanceAnalytics)
 library(Quandl)
 library(quantmod)
 library(quantstrat)
 library(tidyverse)
-```
-
-    ## -- Attaching packages ----------------------------------------------------------------------------------------- tidyverse 1.2.1 --
-
-    ## v ggplot2 3.1.1     v purrr   0.3.2
-    ## v tibble  2.1.1     v dplyr   0.8.1
-    ## v tidyr   0.8.3     v stringr 1.4.0
-    ## v readr   1.3.1     v forcats 0.4.0
-
-    ## -- Conflicts -------------------------------------------------------------------------------------------- tidyverse_conflicts() --
-    ## x purrr::accumulate() masks foreach::accumulate()
-    ## x dplyr::filter()     masks stats::filter()
-    ## x dplyr::first()      masks xts::first()
-    ## x dplyr::lag()        masks stats::lag()
-    ## x dplyr::last()       masks xts::last()
-    ## x tidyr::spread()     masks FinancialInstrument::spread()
-    ## x purrr::when()       masks foreach::when()
-
-``` r
 library(TTR)
 ```
 
-### 2\. Importing Data and Exploratory Data Analysis
+## Code
+
+### 1\. Importing Data
+
+The herein used data can be found in the [Wiki Continuous Futures
+database of
+Quandl](https://www.quandl.com/data/CHRIS/CME_NG1-Natural-Gas-Henry-Hub-Physical-Futures-Continuous-Contract-1-NG1-Front-Month).
+The Quandl package is used to to automate the querying of data.
 
 ``` r
 # Import Henry Hub Natural Gas Front Month Contract Data from Quandl
@@ -179,6 +110,8 @@ glimpse(natgas_xts)
     ##   xts Attributes:  
     ##  NULL
 
+### 2\. Exploratory Data Analysis
+
 ``` r
 # Define a standard theme for each visualization
 theme_report <- function() {
@@ -203,7 +136,7 @@ autoplot(object = natgas_xts$Settle) +
   theme_report()
 ```
 
-![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
 
 A historical analysis of Henry Hub Natural Gas prices demonstrates a few
 interesting points. In 2001, we see a large rally in prices, which,
@@ -272,7 +205,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
 
     ## Warning: Removed 1 rows containing non-finite values (stat_bin).
 
-![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
 
 Similar to the earlier analysis done for Brent Crude Returns, returns
 from Henry Hub Natural Gas Futures are mildly left-skewed (as are most
@@ -300,7 +233,7 @@ natgas %>%
 
     ## Warning: Removed 1 rows containing non-finite values (stat_boxplot).
 
-![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
 
 Natural Gas returns appear to be substantially more volatile than those
 seen in Brent. While the majority of Brent returns find themselves
@@ -329,7 +262,7 @@ natgas_returns %>%
 
     ## Warning: Removed 1 rows containing non-finite values (stat_qq_line).
 
-![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
 Natural Gas returns show signs of *very fat* tails, as observed in the
 trailing observations at the end of the QQ-Line. This suggests that
@@ -795,10 +728,6 @@ purl("algo-trading-with-natgas-futures.Rmd")
 ```
 
     ## 
-    ## 
-    ## processing file: algo-trading-with-natgas-futures.Rmd
-
-    ## 
       |                                                                       
       |                                                                 |   0%
       |                                                                       
@@ -810,51 +739,53 @@ purl("algo-trading-with-natgas-futures.Rmd")
       |                                                                       
       |........                                                         |  12%
       |                                                                       
-      |..........                                                       |  16%
+      |..........                                                       |  15%
       |                                                                       
-      |............                                                     |  19%
+      |............                                                     |  18%
       |                                                                       
-      |..............                                                   |  22%
+      |..............                                                   |  21%
       |                                                                       
-      |................                                                 |  25%
+      |................                                                 |  24%
       |                                                                       
-      |..................                                               |  28%
+      |..................                                               |  27%
       |                                                                       
-      |....................                                             |  31%
+      |....................                                             |  30%
       |                                                                       
-      |......................                                           |  34%
+      |......................                                           |  33%
       |                                                                       
-      |........................                                         |  38%
+      |........................                                         |  36%
       |                                                                       
-      |..........................                                       |  41%
+      |..........................                                       |  39%
       |                                                                       
-      |............................                                     |  44%
+      |............................                                     |  42%
       |                                                                       
-      |..............................                                   |  47%
+      |..............................                                   |  45%
       |                                                                       
-      |................................                                 |  50%
+      |................................                                 |  48%
       |                                                                       
-      |...................................                              |  53%
+      |.................................                                |  52%
       |                                                                       
-      |.....................................                            |  56%
+      |...................................                              |  55%
       |                                                                       
-      |.......................................                          |  59%
+      |.....................................                            |  58%
       |                                                                       
-      |.........................................                        |  62%
+      |.......................................                          |  61%
       |                                                                       
-      |...........................................                      |  66%
+      |.........................................                        |  64%
       |                                                                       
-      |.............................................                    |  69%
+      |...........................................                      |  67%
       |                                                                       
-      |...............................................                  |  72%
+      |.............................................                    |  70%
       |                                                                       
-      |.................................................                |  75%
+      |...............................................                  |  73%
       |                                                                       
-      |...................................................              |  78%
+      |.................................................                |  76%
       |                                                                       
-      |.....................................................            |  81%
+      |...................................................              |  79%
       |                                                                       
-      |.......................................................          |  84%
+      |.....................................................            |  82%
+      |                                                                       
+      |.......................................................          |  85%
       |                                                                       
       |.........................................................        |  88%
       |                                                                       
@@ -865,8 +796,6 @@ purl("algo-trading-with-natgas-futures.Rmd")
       |...............................................................  |  97%
       |                                                                       
       |.................................................................| 100%
-
-    ## output file: algo-trading-with-natgas-futures.R
 
     ## [1] "algo-trading-with-natgas-futures.R"
 
