@@ -7,5 +7,3 @@ Raw historical data on Henry Hub futures was sourced from [Quandl](https://www.q
 <p align="center">
   <img src="https://github.com/NicholasTanWeiHong/algo-trading-with-natgas-futures/blob/master/algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-16-1.png?raw=true" alt="performance"/>
 </p>
-
-![Backtested Performance of a Trend-Following + Mean-Reversion Strategy](https://github.com/NicholasTanWeiHong/algo-trading-with-natgas-futures/blob/master/algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-16-1.png)
