@@ -18,4 +18,6 @@ Alternatively, git clone to a local folder with
 
 `git clone https://github.com/NicholasTanWeiHong/algo-trading-with-natgas-futures.git`
 
-Then open 'algo-trading-with-natgas-futures.R'
+Then open 
+
+`algo-trading-with-natgas-futures.R`
