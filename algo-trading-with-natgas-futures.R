@@ -1,4 +1,4 @@
-## ----message = FALSE-----------------------------------------------------
+## ----package_installs, message = FALSE-----------------------------------
 library(forecast)
 library(IKTrading)
 library(knitr)
@@ -6,11 +6,12 @@ library(PerformanceAnalytics)
 library(Quandl)
 library(quantmod)
 library(quantstrat)
+library(scales)
 library(tidyverse)
 library(TTR)
 
 
-## ------------------------------------------------------------------------
+## ----import_data---------------------------------------------------------
 # Import Henry Hub Natural Gas Front Month Contract Data from Quandl
 Quandl.api_key("rn2xyN_hG9XfxN_9ibFJ")
 natgas <- Quandl("CHRIS/CME_NG1")
@@ -18,13 +19,7 @@ natgas <- Quandl("CHRIS/CME_NG1")
 # Print the structure of the Natural Gas Data
 glimpse(natgas)
 
-# Print the first 6 rows of the data.frame
-head(natgas)
-
-# Print the last 6 rows of the data.frame
-tail(natgas)
-
-## ------------------------------------------------------------------------
+## ----convert_xts---------------------------------------------------------
 # Convert the data.frame object to an xts object
 natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 
@@ -32,7 +27,7 @@ natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 glimpse(natgas_xts)
 
 
-## ----fig.align = "center"------------------------------------------------
+## ----define_theme, message = FALSE---------------------------------------
 # Define a standard theme for each visualization
 theme_report <- function() {
   theme_minimal() +
@@ -45,6 +40,8 @@ theme_report <- function() {
   )
 }
 
+
+## ----plot_prices, fig.align = "center"-----------------------------------
 # Plot the historical data for HH Futures with rectanges identifying spikes
 autoplot(object = natgas_xts$Settle) +
   labs(
@@ -56,14 +53,14 @@ autoplot(object = natgas_xts$Settle) +
   theme_report()
 
 
-## ------------------------------------------------------------------------
+## ----convert_returns-----------------------------------------------------
 # Compute the daily returns from HH Natural Gas Physical Futures
 natgas_returns <- Return.calculate(prices = natgas_xts$Settle)
 
 # Examine the natgas_returns xts objects
 tail(natgas_returns)
 
-## ------------------------------------------------------------------------
+## ----explore_moves-------------------------------------------------------
 # Find the largest up move and down move in HH Natural Gas Futures
 largest_up_move <- max(natgas_returns$Settle, na.rm = TRUE)
 largest_down_move <- min(natgas_returns$Settle, na.rm = TRUE)
@@ -73,7 +70,7 @@ natgas_returns[which(natgas_returns$Settle == largest_up_move)]
 natgas_returns[which(natgas_returns$Settle == largest_down_move)]
 
 
-## ----fig.align = "center"------------------------------------------------
+## ----plot_histogram, fig.align = "center"--------------------------------
 # Plot a histogram of Natural Gas returns
 ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
   geom_histogram(alpha = 0.75, binwidth = .01, col = "black") +
@@ -86,7 +83,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
   theme_report()
 
 
-## ----fig.align = "center"------------------------------------------------
+## ----plot_boxplots, fig.align = "center"---------------------------------
 # Plot a series of boxplots per year
 natgas %>% 
   mutate(Year = format(Date, "%Y"), Returns = (Settle / lead(Settle) - 1)) %>% 
@@ -99,6 +96,7 @@ natgas %>%
       title = "Boxplots of Natural Gas Returns", 
       subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
       caption = "Source: Quandl, Wiki Continuous Futures") +
+    scale_y_continuous(labels = percent) +
     theme_report() +
     theme(
       legend.position = "none",
@@ -106,7 +104,7 @@ natgas %>%
       )
 
 
-## ----fig.align = "center"------------------------------------------------
+## ----plot_qq, fig.align = "center"---------------------------------------
 # Plot a QQ PLot of Returns
 natgas_returns %>% 
   ggplot(mapping = aes(sample = Settle)) +
@@ -122,7 +120,7 @@ natgas_returns %>%
   theme_report()
 
 
-## ------------------------------------------------------------------------
+## ----init_strategy-------------------------------------------------------
 # Define initial system parameters
 initdate <- "2010-01-01"
 from <- "2011-01-01"
@@ -143,7 +141,7 @@ head(NG)
 tail(NG)
 future(primary_id = asset, currency = "USD", multiplier = 1)
 
-## ------------------------------------------------------------------------
+## ----init_objects--------------------------------------------------------
 # Define tradesize and initial equity amounts as $10,000 and $100,000 respectively
 tradesize <- 10000
 initeq <- 100000
@@ -162,7 +160,7 @@ initOrders(portfolio.st, initDate = initdate)
 strategy(strategy.st, store = TRUE)
 
 
-## ------------------------------------------------------------------------
+## ----add_indicators------------------------------------------------------
 # Add a long-dated Simple Moving Average indicator to the strategy
 add.indicator(
   strategy = strategy.st, 
@@ -192,7 +190,7 @@ add.indicator(
   )
 
 
-## ------------------------------------------------------------------------
+## ----add_signals---------------------------------------------------------
 # Add a buy signal when SMA50 crosses above SMA200
 add.signal(
   strategy = strategy.st, 
@@ -243,7 +241,7 @@ add.signal(
   label = "exit_threshold")
 
 
-## ------------------------------------------------------------------------
+## ----add_rules-----------------------------------------------------------
 # Add a rule to go long when the long_entry signal is TRUE
 add.rule(
   strategy = strategy.st, 
@@ -290,7 +288,7 @@ add.rule(
   type = "exit")
 
 
-## ----message = FALSE-----------------------------------------------------
+## ----update_portf, message = FALSE---------------------------------------
 # Apply the strategy onto Natural Gas Historical Data
 output <- applyStrategy(strategy = strategy.st, portfolios = portfolio.st)
 
@@ -301,17 +299,18 @@ updateAcct(account.st, daterange)
 updateEndEq(account.st)
 
 
-## ------------------------------------------------------------------------
+## ----plot_results--------------------------------------------------------
 # Plot a summary chart of the Portfolio's performance
 chart.Posn(Portfolio = portfolio.st, Symbol = asset)
 
 
-## ------------------------------------------------------------------------
+## ----analyze_perf--------------------------------------------------------
 # Generate trade statistics for this strategy
 tstats <- tradeStats(Portfolios = portfolio.st)
 data.frame(t(tstats))
 
-## ----message = FALSE-----------------------------------------------------
+
+## ----purl_to_script, message = FALSE-------------------------------------
 # Export analysis to an R Script
 purl("algo-trading-with-natgas-futures.Rmd")
 

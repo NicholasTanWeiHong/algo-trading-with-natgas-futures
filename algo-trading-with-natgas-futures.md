@@ -1,9 +1,9 @@
 Algorithmic Trading with Natural Gas Futures
 ================
-Last updated on 2019-07-03
+Last updated on 2019-07-05
 
   - [Summary](#summary)
-  - [Library Imports](#library-imports)
+  - [Package Installs](#package-installs)
   - [Code](#code)
       - [1. Importing Data](#importing-data)
       - [2. Exploratory Data Analysis](#exploratory-data-analysis)
@@ -30,7 +30,7 @@ to devise an algorithmic trading strategy for Henry Hub Natural Gas
 Futures. It is accompanied by a small section that entails exploratory
 data analysis on the Natural Gas time series data sourced from Quandl.
 
-## Library Imports
+## Package Installs
 
 ``` r
 library(forecast)
@@ -40,6 +40,7 @@ library(PerformanceAnalytics)
 library(Quandl)
 library(quantmod)
 library(quantstrat)
+library(scales)
 library(tidyverse)
 library(TTR)
 ```
@@ -62,57 +63,17 @@ natgas <- Quandl("CHRIS/CME_NG1")
 glimpse(natgas)
 ```
 
-    ## Observations: 7,332
+    ## Observations: 7,334
     ## Variables: 9
-    ## $ Date                         <date> 2019-07-01, 2019-06-28, 2019-06-...
-    ## $ Open                         <dbl> 2.330, 2.320, 2.271, 2.289, 2.303...
-    ## $ High                         <dbl> 2.331, 2.364, 2.339, 2.324, 2.315...
-    ## $ Low                          <dbl> 2.217, 2.300, 2.265, 2.265, 2.255...
-    ## $ Last                         <dbl> 2.265, 2.316, 2.323, 2.292, 2.284...
-    ## $ Change                       <dbl> 0.041, 0.016, 0.056, 0.017, 0.005...
-    ## $ Settle                       <dbl> 2.267, 2.308, 2.324, 2.291, 2.308...
-    ## $ Volume                       <dbl> 147490, 116137, 108269, 5791, 538...
-    ## $ `Previous Day Open Interest` <dbl> 366666, 373211, 373163, 4148, 267...
-
-``` r
-# Print the first 6 rows of the data.frame
-head(natgas)
-```
-
-    ##         Date  Open  High   Low  Last Change Settle Volume
-    ## 1 2019-07-01 2.330 2.331 2.217 2.265  0.041  2.267 147490
-    ## 2 2019-06-28 2.320 2.364 2.300 2.316  0.016  2.308 116137
-    ## 3 2019-06-27 2.271 2.339 2.265 2.323  0.056  2.324 108269
-    ## 4 2019-06-26 2.289 2.324 2.265 2.292  0.017  2.291   5791
-    ## 5 2019-06-25 2.303 2.315 2.255 2.284  0.005  2.308  53866
-    ## 6 2019-06-24 2.197 2.316 2.195 2.301  0.117  2.303  66938
-    ##   Previous Day Open Interest
-    ## 1                     366666
-    ## 2                     373211
-    ## 3                     373163
-    ## 4                       4148
-    ## 5                      26732
-    ## 6                      35429
-
-``` r
-# Print the last 6 rows of the data.frame
-tail(natgas)
-```
-
-    ##            Date  Open  High   Low  Last Change Settle Volume
-    ## 7327 1990-04-10 1.625 1.630 1.613 1.620     NA  1.620     29
-    ## 7328 1990-04-09 1.612 1.640 1.612 1.637     NA  1.637     37
-    ## 7329 1990-04-06 1.615 1.635 1.610 1.625     NA  1.625     62
-    ## 7330 1990-04-05 1.615 1.635 1.610 1.615     NA  1.615     57
-    ## 7331 1990-04-04 1.620 1.650 1.599 1.620     NA  1.620     84
-    ## 7332 1990-04-03 1.580 1.655 1.580 1.635     NA  1.635    240
-    ##      Previous Day Open Interest
-    ## 7327                        150
-    ## 7328                        145
-    ## 7329                        136
-    ## 7330                        112
-    ## 7331                        127
-    ## 7332                        110
+    ## $ Date                         <date> 2019-07-03, 2019-07-02, 2019-07-...
+    ## $ Open                         <dbl> 2.240, 2.266, 2.330, 2.320, 2.271...
+    ## $ High                         <dbl> 2.296, 2.297, 2.331, 2.364, 2.339...
+    ## $ Low                          <dbl> 2.237, 2.232, 2.217, 2.300, 2.265...
+    ## $ Last                         <dbl> 2.288, 2.239, 2.265, 2.316, 2.323...
+    ## $ Change                       <dbl> 0.050, 0.027, 0.041, 0.016, 0.056...
+    ## $ Settle                       <dbl> 2.290, 2.240, 2.267, 2.308, 2.324...
+    ## $ Volume                       <dbl> 90700, 96632, 147490, 116137, 108...
+    ## $ `Previous Day Open Interest` <dbl> 366928, 366243, 366666, 373211, 3...
 
 ``` r
 # Convert the data.frame object to an xts object
@@ -122,8 +83,8 @@ natgas_xts <- xts(x = natgas[, -1], order.by = natgas$Date)
 glimpse(natgas_xts)
 ```
 
-    ## An 'xts' object on 1990-04-03/2019-07-01 containing:
-    ##   Data: num [1:7332, 1:8] 1.58 1.62 1.61 1.61 1.61 ...
+    ## An 'xts' object on 1990-04-03/2019-07-03 containing:
+    ##   Data: num [1:7334, 1:8] 1.58 1.62 1.61 1.61 1.61 ...
     ##  - attr(*, "dimnames")=List of 2
     ##   ..$ : NULL
     ##   ..$ : chr [1:8] "Open" "High" "Low" "Last" ...
@@ -145,7 +106,9 @@ theme_report <- function() {
     plot.margin = unit(c(5, 10, 5, 10), units = "mm")
   )
 }
+```
 
+``` r
 # Plot the historical data for HH Futures with rectanges identifying spikes
 autoplot(object = natgas_xts$Settle) +
   labs(
@@ -157,7 +120,7 @@ autoplot(object = natgas_xts$Settle) +
   theme_report()
 ```
 
-<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/plot_prices-1.png" style="display: block; margin: auto;" />
 
 A historical analysis of Henry Hub Natural Gas prices demonstrates a few
 interesting points. In 2001, we see a large rally in prices, which,
@@ -178,12 +141,12 @@ tail(natgas_returns)
 ```
 
     ##                  Settle
-    ## 2019-06-24  0.053522415
-    ## 2019-06-25  0.002171081
     ## 2019-06-26 -0.007365685
     ## 2019-06-27  0.014404190
     ## 2019-06-28 -0.006884682
     ## 2019-07-01 -0.017764298
+    ## 2019-07-02 -0.011910013
+    ## 2019-07-03  0.022321429
 
 ``` r
 # Find the largest up move and down move in HH Natural Gas Futures
@@ -226,7 +189,7 @@ ggplot(data = natgas_returns, mapping = aes(x = Settle)) +
 
     ## Warning: Removed 1 rows containing non-finite values (stat_bin).
 
-<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-7-1.png" style="display: block; margin: auto;" />
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/plot_histogram-1.png" style="display: block; margin: auto;" />
 
 Similar to the earlier analysis done for Brent Crude Returns, returns
 from Henry Hub Natural Gas Futures are mildly left-skewed (as are most
@@ -245,6 +208,7 @@ natgas %>%
       title = "Boxplots of Natural Gas Returns", 
       subtitle = "Henry Hub Natural Gas Returns, 1990 to 2019",
       caption = "Source: Quandl, Wiki Continuous Futures") +
+    scale_y_continuous(labels = percent) +
     theme_report() +
     theme(
       legend.position = "none",
@@ -254,7 +218,7 @@ natgas %>%
 
     ## Warning: Removed 1 rows containing non-finite values (stat_boxplot).
 
-<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-8-1.png" style="display: block; margin: auto;" />
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/plot_boxplots-1.png" style="display: block; margin: auto;" />
 
 Natural Gas returns appear to be substantially more volatile than those
 seen in Brent. While the majority of Brent returns find themselves
@@ -283,7 +247,7 @@ natgas_returns %>%
 
     ## Warning: Removed 1 rows containing non-finite values (stat_qq_line).
 
-<img src="algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
+<img src="algo-trading-with-natgas-futures_files/figure-gfm/plot_qq-1.png" style="display: block; margin: auto;" />
 
 Natural Gas returns show signs of *very fat* tails, as observed in the
 trailing observations at the end of the QQ-Line. This suggests that
@@ -699,7 +663,7 @@ updateEndEq(account.st)
 chart.Posn(Portfolio = portfolio.st, Symbol = asset)
 ```
 
-![](algo-trading-with-natgas-futures_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](algo-trading-with-natgas-futures_files/figure-gfm/plot_results-1.png)<!-- -->
 
 ### 9\. Analyzing the performance of the Strategy
 
@@ -747,76 +711,6 @@ data.frame(t(tstats))
 # Export analysis to an R Script
 purl("algo-trading-with-natgas-futures.Rmd")
 ```
-
-    ## 
-      |                                                                       
-      |                                                                 |   0%
-      |                                                                       
-      |..                                                               |   3%
-      |                                                                       
-      |....                                                             |   6%
-      |                                                                       
-      |......                                                           |   9%
-      |                                                                       
-      |........                                                         |  12%
-      |                                                                       
-      |..........                                                       |  15%
-      |                                                                       
-      |............                                                     |  18%
-      |                                                                       
-      |..............                                                   |  21%
-      |                                                                       
-      |................                                                 |  24%
-      |                                                                       
-      |..................                                               |  27%
-      |                                                                       
-      |....................                                             |  30%
-      |                                                                       
-      |......................                                           |  33%
-      |                                                                       
-      |........................                                         |  36%
-      |                                                                       
-      |..........................                                       |  39%
-      |                                                                       
-      |............................                                     |  42%
-      |                                                                       
-      |..............................                                   |  45%
-      |                                                                       
-      |................................                                 |  48%
-      |                                                                       
-      |.................................                                |  52%
-      |                                                                       
-      |...................................                              |  55%
-      |                                                                       
-      |.....................................                            |  58%
-      |                                                                       
-      |.......................................                          |  61%
-      |                                                                       
-      |.........................................                        |  64%
-      |                                                                       
-      |...........................................                      |  67%
-      |                                                                       
-      |.............................................                    |  70%
-      |                                                                       
-      |...............................................                  |  73%
-      |                                                                       
-      |.................................................                |  76%
-      |                                                                       
-      |...................................................              |  79%
-      |                                                                       
-      |.....................................................            |  82%
-      |                                                                       
-      |.......................................................          |  85%
-      |                                                                       
-      |.........................................................        |  88%
-      |                                                                       
-      |...........................................................      |  91%
-      |                                                                       
-      |.............................................................    |  94%
-      |                                                                       
-      |...............................................................  |  97%
-      |                                                                       
-      |.................................................................| 100%
 
     ## [1] "algo-trading-with-natgas-futures.R"
 
